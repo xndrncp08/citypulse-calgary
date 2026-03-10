@@ -1,8 +1,6 @@
 import { useWeather, useAirQuality } from "../hooks/useApi";
 import { PageHeader, Card, LoadingState, ErrorState, SectionTitle, StatCard } from "../components/ui";
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-} from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 
 function aqhiColor(v: number): string {
