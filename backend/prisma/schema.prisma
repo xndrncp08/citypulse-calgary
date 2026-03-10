@@ -1,0 +1,149 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model TrafficIncident {
+  id                  String   @id @default(cuid())
+  incidentId          String   @unique @map("incident_id")
+  description         String?
+  latitude            Float
+  longitude           Float
+  incidentType        String   @map("incident_type")
+  startTime           DateTime @map("start_time")
+  endTime             DateTime? @map("end_time")
+  locationDescription String?  @map("location_description")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@index([latitude, longitude])
+  @@index([startTime])
+  @@index([incidentType])
+  @@map("traffic_incidents")
+}
+
+model RoadClosure {
+  id            String    @id @default(cuid())
+  closureId     String    @unique @map("closure_id")
+  roadName      String    @map("road_name")
+  latitude      Float
+  longitude     Float
+  closureStart  DateTime  @map("closure_start")
+  closureEnd    DateTime? @map("closure_end")
+  closureReason String?   @map("closure_reason")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([latitude, longitude])
+  @@index([closureStart])
+  @@map("road_closures")
+}
+
+model BikeCounter {
+  id           String     @id @default(cuid())
+  counterId    String     @unique @map("counter_id")
+  locationName String     @map("location_name")
+  latitude     Float
+  longitude    Float
+  readings     BikeReading[]
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  @@index([latitude, longitude])
+  @@map("bike_counters")
+}
+
+model BikeReading {
+  id         String      @id @default(cuid())
+  counterId  String      @map("counter_id")
+  counter    BikeCounter @relation(fields: [counterId], references: [id], onDelete: Cascade)
+  date       DateTime
+  bikeCount  Int         @map("bike_count")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  @@unique([counterId, date])
+  @@index([date])
+  @@map("bike_readings")
+}
+
+model TransitRoute {
+  id        String        @id @default(cuid())
+  routeId   String        @unique @map("route_id")
+  routeName String        @map("route_name")
+  trips     TransitTrip[]
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  @@map("transit_routes")
+}
+
+model TransitStop {
+  id        String            @id @default(cuid())
+  stopId    String            @unique @map("stop_id")
+  stopName  String            @map("stop_name")
+  latitude  Float
+  longitude Float
+  stopTimes TransitStopTime[]
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+
+  @@index([latitude, longitude])
+  @@map("transit_stops")
+}
+
+model TransitTrip {
+  id        String            @id @default(cuid())
+  tripId    String            @unique @map("trip_id")
+  routeId   String            @map("route_id")
+  route     TransitRoute      @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  stopTimes TransitStopTime[]
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  @@map("transit_trips")
+}
+
+model TransitStopTime {
+  id            String      @id @default(cuid())
+  tripId        String      @map("trip_id")
+  trip          TransitTrip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  stopId        String      @map("stop_id")
+  stop          TransitStop @relation(fields: [stopId], references: [id], onDelete: Cascade)
+  arrivalTime   String      @map("arrival_time")
+  departureTime String      @map("departure_time")
+  stopSequence  Int         @map("stop_sequence")
+
+  @@unique([tripId, stopId, stopSequence])
+  @@map("transit_stop_times")
+}
+
+model WeatherReading {
+  id            String   @id @default(cuid())
+  timestamp     DateTime @unique
+  temperature   Float?
+  windSpeed     Float?   @map("wind_speed")
+  precipitation Float?
+  humidity      Float?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@index([timestamp])
+  @@map("weather_readings")
+}
+
+model AirQualityReading {
+  id          String   @id @default(cuid())
+  timestamp   DateTime
+  aqhi        Float
+  stationName String   @map("station_name")
+  latitude    Float
+  longitude   Float
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([timestamp, stationName])
+  @@index([timestamp])
+  @@index([latitude, longitude])
+  @@map("air_quality_readings")
+}
